@@ -29,7 +29,7 @@ variable "key_name" {
 variable "ami_id" {
   description = "ID de l'AMI Ubuntu 22.04"
   type        = string
-  default     = "ami-0c7217cdde317cfec"
+  default     = "ami-0a6afd7a4f0f60463"
 }
 
 # CIDR VPC
