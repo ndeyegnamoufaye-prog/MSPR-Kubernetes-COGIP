@@ -1,0 +1,40 @@
+---
+- name: Déploiement Odoo sur K3s
+  hosts: control_plane
+  become: yes
+  tasks:
+    - name: Ajouter le dépôt Helm Bitnami
+      shell: |
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        helm repo update
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+    - name: Créer le namespace Odoo
+      shell: |
+        kubectl create namespace odoo --dry-run=client -o yaml | kubectl apply -f -
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+    - name: Déployer Odoo via Helm
+      shell: |
+        KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade --install odoo bitnami/odoo \
+          --namespace odoo \
+          --set image.tag=16 \
+          --set service.type=LoadBalancer \
+          --set ingress.enabled=false \
+          --set persistence.size=1Gi \
+          --timeout 20m \
+          --wait
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+    - name: Vérifier les pods Odoo
+      shell: kubectl get pods -n odoo
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: odoo_pods
+
+    - name: Afficher les pods
+      debug:
+        msg: "{{ odoo_pods.stdout }}"

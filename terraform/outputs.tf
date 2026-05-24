@@ -22,11 +22,7 @@ output "worker2_ip" {
   value       = aws_instance.worker2.public_ip
 }
 
-# DNS EFS
-output "efs_dns" {
-  description = "DNS du stockage EFS"
-  value       = aws_efs_file_system.mspr_efs.dns_name
-}
+
 
 # Elastic IP
 output "elastic_ip" {

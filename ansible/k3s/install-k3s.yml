@@ -1,0 +1,41 @@
+---
+- name: Installation K3s Control-plane
+  hosts: control_plane
+  become: yes
+  tasks:
+    - name: Installer K3s sur le control-plane
+      shell: |
+        curl -sfL https://get.k3s.io | sh -
+      args:
+        creates: /usr/local/bin/k3s
+
+    - name: Attendre que K3s soit prêt
+      wait_for:
+        port: 6443
+        delay: 10
+        timeout: 120
+
+    - name: Récupérer le token K3s
+      command: cat /var/lib/rancher/k3s/server/node-token
+      register: k3s_token
+
+    - name: Afficher le token
+      debug:
+        msg: "Token K3s : {{ k3s_token.stdout }}"
+
+- name: Installation K3s Workers
+  hosts: workers
+  become: yes
+  vars:
+    k3s_server_ip: "10.0.1.39"
+  tasks:
+    - name: Récupérer le token depuis le control-plane
+      shell: cat /var/lib/rancher/k3s/server/node-token
+      delegate_to: control-plane
+      register: k3s_token
+
+    - name: Installer K3s worker
+      shell: |
+        curl -sfL https://get.k3s.io | K3S_URL=https://{{ k3s_server_ip }}:6443 K3S_TOKEN={{ k3s_token.stdout }} sh -
+      args:
+        creates: /usr/local/bin/k3s

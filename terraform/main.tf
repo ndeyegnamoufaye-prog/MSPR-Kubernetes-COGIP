@@ -194,22 +194,7 @@ resource "aws_instance" "worker2" {
   }
 }
 
-# EFS (stockage NFS)
-resource "aws_efs_file_system" "mspr_efs" {
-  creation_token = "${var.project_name}-efs"
 
-  tags = {
-    Name    = "${var.project_name}-efs"
-    Project = var.project_name
-  }
-}
-
-# EFS Mount Target
-resource "aws_efs_mount_target" "mspr_efs_mt" {
-  file_system_id  = aws_efs_file_system.mspr_efs.id
-  subnet_id       = aws_subnet.mspr_subnet.id
-  security_groups = [aws_security_group.mspr_sg.id]
-}
 
 # Elastic IP pour l'Ingress
 resource "aws_eip" "mspr_eip" {
